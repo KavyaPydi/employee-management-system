@@ -156,12 +156,9 @@ def load_employees():
         return employees
     return []
 
-# -------------------------------------
-# Layout: Add Employee / Employee Table
-# -------------------------------------
 col1, col2 = st.columns(2)
 
-# Add Employee Form
+# Add Employee
 with col1:
     st.header("➕ Add New Employee")
     with st.form("add_employee_form"):
@@ -184,7 +181,7 @@ with col1:
             else:
                 st.error(f"❌ Error ({code}): {response}")
 
-# Delete Employee
+# Delete Employee 
 with col2:
     st.header("✖️ Delete Employee")
     employees = load_employees()
@@ -223,11 +220,7 @@ if employees:
 else:
     st.info("No employees found.")
 
-
-
-# -------------------------------------
 # Statistics
-# -------------------------------------
 st.header("📊 Statistics")
 median_age, median_salary = api_get_stats()
 colA, colB = st.columns(2)

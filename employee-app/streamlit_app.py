@@ -1,12 +1,12 @@
 import streamlit as st
 import requests
 import pandas as pd
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 API_BASE = "http://localhost:8000"
 
-
 # -------------------------------------
-# Utility Functions to Call API
+# API Utility Functions
 # -------------------------------------
 def api_add_employee(name, age, salary):
     try:
@@ -49,13 +49,10 @@ def api_get_stats():
 
 
 # -------------------------------------
-# Streamlit UI Layout
+# Streamlit Layout & CSS
 # -------------------------------------
-
-# -------------------------
-# Page Title
-# -------------------------
 st.set_page_config(page_title="Employee Dashboard", layout="wide")
+
 # Custom CSS Styling
 st.markdown("""
     <style>
@@ -140,35 +137,40 @@ st.markdown("""
         background-color: white !important;
         color: #2b3e50 !important;
     }
-
+            
+    .left-aligned-header .ag-header-cell-label {
+                justify-content: flex-start !important;
+                padding-left: 10px;
+            }
+}
     </style>
 """, unsafe_allow_html=True)
-
 
 
 st.title("👨‍💼 Employee Management Dashboard")
 
 
-# -------------------------
-# Column Layout
-# -------------------------
+def load_employees():
+    employees, code = api_get_employees()
+    if code == 200 and isinstance(employees, list):
+        return employees
+    return []
+
+# -------------------------------------
+# Layout: Add Employee / Employee Table
+# -------------------------------------
 col1, col2 = st.columns(2)
 
-# -------------------------
-# Form: Add New Employee
-# -------------------------
+# Add Employee Form
 with col1:
     st.header("➕ Add New Employee")
-
     with st.form("add_employee_form"):
         name = st.text_input("Name")
         age = st.number_input("Age", min_value=1, max_value=120, step=1)
         salary = st.number_input("Salary", min_value=0.0, step=100.0)
-
         submit_button = st.form_submit_button("Add Employee")
 
     if submit_button:
-        # Validation checks
         if not name.strip():
             st.error("❌ Name cannot be empty.")
         elif age <= 0:
@@ -182,58 +184,54 @@ with col1:
             else:
                 st.error(f"❌ Error ({code}): {response}")
 
-# -------------------------
-# Table: View All Employees
-# -------------------------
+# Delete Employee
 with col2:
-    st.header("📋 Employee List")
+    st.header("✖️ Delete Employee")
+    employees = load_employees()
+    emp_ids = [emp["employee_id"] for emp in employees]
+    selected_id = st.selectbox("Select Employee ID to Delete", emp_ids)
 
-    employees, code = api_get_employees()
+    if st.button("Delete Employee"):
+        response, code = api_delete_employee(selected_id)
+        if code == 200:
+            st.success(f"Deleted Employee with ID: {selected_id}")
+        else:
+            st.error(f"Error ({code}): {response}")
 
-    if code == 200 and isinstance(employees, list):
-        df = pd.DataFrame(employees)
-        df = df.rename(columns={
+# Employee Table
+st.header("📋 Employee List")
+employees = load_employees()
+if employees:
+    df = pd.DataFrame(employees)
+    df.insert(0, "S.No", range(1, len(df) + 1))
+    df = df.rename(columns={
             "employee_id": "Employee ID",
             "name": "Name",
             "age": "Age",
             "salary": "Salary"
         })
-        df = df.astype(str)
-        st.dataframe(df)
-    else:
-        st.error(f"Error loading employees: {employees}")
+    gb = GridOptionsBuilder.from_dataframe(df)
+    for col in df.columns:
+            gb.configure_column(
+                col,
+                cellStyle={'textAlign': 'left'},
+                headerClass='left-aligned-header',
+                flex=2 if col == "Name" else 1
+            )
+    gridOptions = gb.build()
+    AgGrid(df, gridOptions=gridOptions, height=350, fit_columns_on_grid_load=True)
+else:
+    st.info("No employees found.")
 
 
-# -------------------------
-# Delete Employee
-# -------------------------
-st.header("✖️ Delete Employee")
 
-employees, _ = api_get_employees()
-emp_ids = [emp["employee_id"] for emp in employees] if isinstance(employees, list) else []
-
-selected_id = st.selectbox("Select Employee ID to Delete", emp_ids)
-
-if st.button("Delete Employee"):
-    response, code = api_delete_employee(selected_id)
-    if code == 200:
-        st.success(f"Deleted Employee with ID: {selected_id}")
-    else:
-        st.error(f"Error ({code}): {response}")
-
-
-# -------------------------
-# Stats: Median Values
-# -------------------------
+# -------------------------------------
+# Statistics
+# -------------------------------------
 st.header("📊 Statistics")
-
 median_age, median_salary = api_get_stats()
-
 colA, colB = st.columns(2)
-
 with colA:
     st.metric(label="Median Age", value=median_age if median_age is not None else "N/A")
-
 with colB:
     st.metric(label="Median Salary", value=median_salary if median_salary is not None else "N/A")
-

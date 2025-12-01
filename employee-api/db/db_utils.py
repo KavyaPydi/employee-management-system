@@ -62,7 +62,7 @@ def add_employee(emp):
 # ----GET ALL EMPLOYEES----
 def get_all_employees():
     try:
-        query = f"SELECT employee_id, name, age, salary FROM `{TABLE_REF}`"
+        query = f"SELECT employee_id, name, age, salary FROM `{TABLE_REF}` ORDER BY employee_id ASC"
         rows = client.query(query).result()
         return [dict(row) for row in rows]
 
@@ -110,7 +110,7 @@ def get_median_age():
             FROM `{TABLE_REF}`
         """
         row = list(client.query(query).result())[0]
-        return {"median_age": row["median_age"]}
+        return row["median_age"]
 
     except GoogleAPIError as e:
         print(f"BigQuery error: {e}")
@@ -130,7 +130,7 @@ def get_median_salary():
         """
 
         row = list(client.query(query).result())[0]
-        return {"median_salary": row["median_salary"]}
+        return row["median_salary"]
 
     except GoogleAPIError as e:
         print(f"BigQuery error: {e}")

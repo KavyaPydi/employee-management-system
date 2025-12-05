@@ -114,11 +114,11 @@ def get_median_age():
 
     except GoogleAPIError as e:
         print(f"BigQuery error: {e}")
-        return {"status": "error", "message": "Failed to calculate median age."}
+        return None
 
     except Exception as e:
         print(f"Unexpected error: {e}")
-        return {"status": "error", "message": "Unexpected error occurred."}
+        return None
 
 
 # ----MEDIAN SALARY----
@@ -134,8 +134,8 @@ def get_median_salary():
 
     except GoogleAPIError as e:
         print(f"BigQuery error: {e}")
-        return {"status": "error", "message": "Failed to calculate median salary."}
+        return None
 
     except Exception as e:
         print(f"Unexpected error: {e}")
-        return {"status": "error", "message": "Unexpected error occurred."}
+        return None

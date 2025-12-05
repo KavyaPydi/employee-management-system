@@ -162,18 +162,24 @@ col1, col2 = st.columns(2)
 with col1:
     st.header("➕ Add New Employee")
     with st.form("add_employee_form"):
-        name = st.text_input("Name")
-        age = st.number_input("Age", min_value=1, max_value=120, step=1)
-        salary = st.number_input("Salary", min_value=0.0, step=100.0)
+        name = st.text_input("Name", max_chars=50)
+        age = st.number_input("Age", min_value=1, max_value=99, step=1)
+        salary = st.number_input("Salary", min_value=0.0, max_value=1000000000.0, step=100.0)
         submit_button = st.form_submit_button("Add Employee")
 
     if submit_button:
         if not name.strip():
             st.error("❌ Name cannot be empty.")
+        elif len(name.strip()) > 50:
+            st.error("❌ Name cannot exceed 50 characters.")
         elif age <= 0:
             st.error("❌ Age must be greater than 0.")
+        elif len(str(int(age))) > 2:
+            st.error("❌ Age must be maximum 2 digits.")
         elif salary <= 0:
             st.error("❌ Salary must be greater than 0.")
+        elif len(str(int(salary))) > 10:
+            st.error("❌ Salary must be maximum 10 digits.")
         else:
             response, code = api_add_employee(name, age, salary)
             if code == 200:

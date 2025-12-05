@@ -13,7 +13,7 @@ def api_add_employee(name, age, salary):
         resp = requests.post(
             f"{API_BASE}/employee",
             json={"name": name, "age": age, "salary": salary},
-            timeout=5
+            timeout=30
         )
         return resp.json(), resp.status_code
     except Exception as e:

@@ -1,0 +1,53 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the repository
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      # 2. Set up Google Cloud SDK and authenticate
+      - name: Set up GCloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+
+      # 3. Build and push employee-api Docker image
+      - name: Build & Push employee-api
+        run: |
+          docker build -t gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-api:latest ./employee-api
+          docker push gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-api:latest
+
+      # 4. Deploy employee-api to Cloud Run
+      - name: Deploy employee-api
+        run: |
+          gcloud run deploy employee-api \
+            --image gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-api:latest \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated
+
+      # 5. Build and push employee-app Docker image
+      - name: Build & Push employee-app
+        run: |
+          docker build -t gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-app:latest ./employee-app
+          docker push gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-app:latest
+
+      # 6. Deploy employee-app to Cloud Run
+      - name: Deploy employee-app
+        run: |
+          gcloud run deploy employee-app \
+            --image gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-app:latest \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --timeout=600s

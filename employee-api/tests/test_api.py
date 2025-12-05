@@ -71,7 +71,7 @@ def test_delete_employee(mock_query):
     mock_query.return_value.result.return_value = None
     response = client.delete("/employee/1")
     assert response.status_code == 200
-    assert response.json() == {"status": "deleted"}
+    assert response.json() == {"status": "success", "message": "Employee deleted"}
 
 # -------------------------
 # GET /stats/median-age

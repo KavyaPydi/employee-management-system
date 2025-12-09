@@ -1,10 +1,11 @@
+from time import sleep
 import streamlit as st
 import requests
 import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder
 
-API_BASE = "https://employee-api-369913130882.us-central1.run.app"
-
+#API_BASE = "https://employee-api-369913130882.us-central1.run.app"
+API_BASE = "http://localhost:8000/"
 # -------------------------------------
 # API Utility Functions
 # -------------------------------------
@@ -161,6 +162,7 @@ col1, col2 = st.columns(2)
 # Add Employee
 with col1:
     st.header("➕ Add New Employee")
+
     with st.form("add_employee_form"):
         name = st.text_input("Name", max_chars=50)
         age = st.number_input("Age", min_value=1, max_value=99, step=1)
@@ -168,24 +170,28 @@ with col1:
         submit_button = st.form_submit_button("Add Employee")
 
     if submit_button:
+        msg = st.empty()
         if not name.strip():
-            st.error("❌ Name cannot be empty.")
+            msg.error("❌ Name cannot be empty.")
         elif len(name.strip()) > 50:
-            st.error("❌ Name cannot exceed 50 characters.")
+            msg.error("❌ Name cannot exceed 50 characters.")
         elif age <= 0:
-            st.error("❌ Age must be greater than 0.")
+            msg.error("❌ Age must be greater than 0.")
         elif len(str(int(age))) > 2:
-            st.error("❌ Age must be maximum 2 digits.")
+            msg.error("❌ Age must be maximum 2 digits.")
         elif salary <= 0:
-            st.error("❌ Salary must be greater than 0.")
+            msg.error("❌ Salary must be greater than 0.")
         elif len(str(int(salary))) > 10:
-            st.error("❌ Salary must be maximum 10 digits.")
+            msg.error("❌ Salary must be maximum 10 digits.")
         else:
             response, code = api_add_employee(name, age, salary)
             if code == 200:
-                st.success(f"✅ Employee added successfully with ID: {response.get('employee_id')}")
+                msg.success(f"✅ Employee added successfully with ID: {response.get('employee_id')}")
             else:
                 st.error(f"❌ Error ({code}): {response}")
+
+        sleep(5)   # wait 5 seconds
+        msg.empty()
 
 # Delete Employee 
 with col2:
@@ -195,11 +201,14 @@ with col2:
     selected_id = st.selectbox("Select Employee ID to Delete", emp_ids)
 
     if st.button("Delete Employee"):
+        msg = st.empty()
         response, code = api_delete_employee(selected_id)
         if code == 200:
-            st.success(f"Deleted Employee with ID: {selected_id}")
+            msg.success(f"Deleted Employee with ID: {selected_id}")
         else:
             st.error(f"Error ({code}): {response}")
+        sleep(5)
+        msg.empty()
 
 # Employee Table
 st.header("📋 Employee List")

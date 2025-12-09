@@ -4,8 +4,8 @@ import requests
 import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder
 
-#API_BASE = "https://employee-api-369913130882.us-central1.run.app"
-API_BASE = "http://localhost:8000/"
+API_BASE = "https://employee-api-369913130882.us-central1.run.app"
+
 # -------------------------------------
 # API Utility Functions
 # -------------------------------------

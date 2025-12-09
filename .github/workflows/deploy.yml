@@ -26,13 +26,17 @@ jobs:
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
-      # 4. Build and push employee-api Docker image
+      # 4. Authenticate Docker to GCR / Artifact Registry
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker gcr.io
+
+      # 5. Build and push employee-api Docker image
       - name: Build & Push employee-api
         run: |
           docker build -t gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-api:latest ./employee-api
           docker push gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-api:latest
 
-      # 5. Deploy employee-api to Cloud Run
+      # 6. Deploy employee-api to Cloud Run
       - name: Deploy employee-api
         run: |
           gcloud run deploy employee-api \
@@ -41,13 +45,13 @@ jobs:
             --platform managed \
             --allow-unauthenticated
 
-      # 6. Build and push employee-app Docker image
+      # 7. Build and push employee-app Docker image
       - name: Build & Push employee-app
         run: |
           docker build -t gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-app:latest ./employee-app
           docker push gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-app:latest
 
-      # 7. Deploy employee-app to Cloud Run
+      # 8. Deploy employee-app to Cloud Run
       - name: Deploy employee-app
         run: |
           gcloud run deploy employee-app \

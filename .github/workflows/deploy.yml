@@ -26,21 +26,22 @@ jobs:
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
-      # 4. Authenticate Docker to GCR / Artifact Registry
-      - name: Configure Docker for GCR
-        run: gcloud auth configure-docker gcr.io
+      # 4. Authenticate Docker to Artifact Registry
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker us-docker.pkg.dev
 
       # 5. Build and push employee-api Docker image
       - name: Build & Push employee-api
         run: |
-          docker build -t gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-api:latest ./employee-api
-          docker push gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-api:latest
+          IMAGE=us-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/employee-repo/employee-api:latest
+          docker build -t $IMAGE ./employee-api
+          docker push $IMAGE
 
       # 6. Deploy employee-api to Cloud Run
       - name: Deploy employee-api
         run: |
           gcloud run deploy employee-api \
-            --image gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-api:latest \
+            --image us-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/employee-repo/employee-api:latest \
             --region us-central1 \
             --platform managed \
             --allow-unauthenticated
@@ -48,14 +49,15 @@ jobs:
       # 7. Build and push employee-app Docker image
       - name: Build & Push employee-app
         run: |
-          docker build -t gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-app:latest ./employee-app
-          docker push gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-app:latest
+          IMAGE=us-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/employee-repo/employee-app:latest
+          docker build -t $IMAGE ./employee-app
+          docker push $IMAGE
 
       # 8. Deploy employee-app to Cloud Run
       - name: Deploy employee-app
         run: |
           gcloud run deploy employee-app \
-            --image gcr.io/${{ vars.GCP_PROJECT_ID }}/employee-app:latest \
+            --image us-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/employee-repo/employee-app:latest \
             --region us-central1 \
             --platform managed \
             --allow-unauthenticated \
